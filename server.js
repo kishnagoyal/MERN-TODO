@@ -1,27 +1,37 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import cors from 'cors';
+import express from 'express'
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+import cors from 'cors'
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
+const app = express()
 
-app.uses(cors());
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(()=> console.log("DB connected"))
+.catch(()=> console.log(err))
 
-const Todo = mongoose.model('Todo', new mongoose.Schema({
+const Todo = mongoose.model("Todo", new mongoose.Schema({
     text: String
 }));
 
-app.get('/todos', async (req, res) => {
+app.get("/todos", async (req,res) => {
     res.json(await Todo.find());
-
 })
 
-app.listen(process.env.PORT, () => 
-    console.log(`Server running on port ${process.env.PORT}`))
+app.post('/todos', async (req,res) => {
+    const todo = await Todo.create({ text : req.body.text });
+    res.json(todo);
+})
+
+app.delete("/todo/:id", async (req, res) => {
+    await Todo.findByIdAndDelete(req.params.id);
+    res.json({message : "Deleted"})
+})
+
+app.listen(process.env.PORT, () =>
+    console.log("Server running on port", process.env.PORT)
+)
